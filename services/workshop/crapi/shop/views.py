@@ -292,6 +292,8 @@ class ApplyCouponView(APIView):
             log_error(request.path, request.data, 400, serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        print("request body -> ", coupon_request_body)
+        print("request body coupon code -> ", coupon_request_body['coupon_code'])
         with connection.cursor() as cursor:
             cursor.execute("SELECT coupon_code from applied_coupon WHERE user_id = "\
                     + str(user.id)\
