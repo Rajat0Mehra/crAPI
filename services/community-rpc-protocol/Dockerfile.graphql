@@ -35,12 +35,12 @@ RUN cp /build/main .
 # Main Image
 FROM alpine:3
 
-# go
-ENV MONGO_DB_HOST=mongodb
-ENV MONGO_DB_PASSWORD=crapisecretpassword
-ENV MONGO_DB_PORT=27017
-ENV MONGO_DB_USER=admin
-ENV MONGO_DB_NAME=crapi
+# # go
+# ENV MONGO_DB_HOST=mongodb
+# ENV MONGO_DB_PASSWORD=crapisecretpassword
+# ENV MONGO_DB_PORT=27017
+# ENV MONGO_DB_USER=admin
+# ENV MONGO_DB_NAME=crapi
 RUN mkdir /app
 RUN apk update && apk add --no-cache curl
 COPY --from=builder /dist/main /app/main

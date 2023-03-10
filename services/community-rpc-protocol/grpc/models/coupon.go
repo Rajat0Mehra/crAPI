@@ -73,7 +73,7 @@ func ValidateCoupon(client *mongo.Client, couponCode string) (*model.Coupon, err
 func SaveCoupon(client *mongo.Client, coupon *pb.Coupon) (*pb.CreateCouponResponse, error) {
 
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
-	_, err := collection.InsertOne(context.TODO(), coupon)
+	_, err := collection.InsertOne(context.TODO(), &coupon)
 	if err != nil {
 		println("Error while inserting coupon into collection")
 		fmt.Println(err)

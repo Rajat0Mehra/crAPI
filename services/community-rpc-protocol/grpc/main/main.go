@@ -8,8 +8,8 @@ import (
 
 	"crapi.community/graphql.grpc/graph/config"
 	"crapi.community/graphql.grpc/graph/model"
-	"crapi.community/graphql.grpc/graph/seed"
 	"crapi.community/graphql.grpc/grpc/models"
+	"crapi.community/graphql.grpc/grpc/seed"
 
 	pb "crapi.community/graphql.grpc/grpc/community-api/src/main/proto/com/crapi/services/community/stub/proto"
 
