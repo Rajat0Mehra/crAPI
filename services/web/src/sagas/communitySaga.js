@@ -47,7 +47,7 @@ export function* getPosts(param) {
       headers,
       method: "POST",
       body: JSON.stringify({query: `query GetAllPosts {
-        GetAllPosts (limit:6) {
+        GetAllPosts (limit:10) {
           id
           title
           content

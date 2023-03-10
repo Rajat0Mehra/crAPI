@@ -12,11 +12,9 @@ import (
 	"context"
 	"errors"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
-	"crapi.community/graphql.grpc/graph/auth"
 	"crapi.community/graphql.grpc/graph/config"
 	"crapi.community/graphql.grpc/graph/model"
 	pb "crapi.community/graphql.grpc/grpc/community-api/src/main/proto/com/crapi/services/community/stub/proto"
@@ -253,13 +251,6 @@ func (r *queryResolver) GetAllPosts(ctx context.Context, limit int) ([]*model.Po
 
 // GetCoupons is the resolver for the GetCoupons field.
 func (r *queryResolver) GetCoupons(ctx context.Context, codes []string) ([]*model.Coupon, error) {
-	req := ctx.Value("request").(*http.Request)
-	_, err := auth.ExtractTokenID(req, server.DB)
-	if err != nil {
-		log.Fatalln("Unauthorized")
-		return nil, err
-	}
-
 	Coupons := GetCoupon(os.Getenv("GRPC-SERVICE"), codes)
 
 	ret := []*model.Coupon{}
