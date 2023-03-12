@@ -286,14 +286,13 @@ export function* applyCoupon(param) {
       yield put({ type: actionTypes.FETCHED_DATA, payload: recievedResponse });
       callback(responseTypes.FAILURE, INVALID_COUPON_CODE);
     } else {
-      const { coupon_code, amount } = CouponJson.data.ValidateCoupon;
       postUrl = APIService.PYTHON_MICRO_SERVICES + requestURLS.APPLY_COUPON;
       const ResponseJson = yield fetch(postUrl, {
         headers,
         method: "POST",
         body: JSON.stringify({
-          coupon_code,
-          amount: parseFloat(amount),
+          coupon_code: CouponJson["data"]["ValidateCoupon"].coupon_code,
+          amount: parseFloat(CouponJson["data"]["ValidateCoupon"].amount),
         }),
       }).then((response) => {
         recievedResponse = response;

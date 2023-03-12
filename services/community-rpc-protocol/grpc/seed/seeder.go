@@ -17,7 +17,6 @@ package seed
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -68,16 +67,30 @@ var emails = [3]string{"adam007@example.com", "pogba006@example.com", "robot001@
 func LoadMongoData(mongoClient *mongo.Client, db *gorm.DB) {
 	var couponResult interface{}
 	var postResult interface{}
-	log.Println("Seeding the values for config - ", os.Getenv("MONGO_DB_NAME"), ", ")
 	collection := mongoClient.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
 	// get a MongoDB document using the FindOne() method
 	err := collection.FindOne(context.TODO(), bson.D{}).Decode(&couponResult)
 	if err != nil {
 		println("There is no existing data in coupons")
 		for i, _ := range coupons {
-			couponData, err := collection.InsertOne(context.TODO(), coupons[i])
+			doc, err := bson.Marshal(coupons[i])
+			if err != nil {
+				println("Error while marshaling coupon into BSON document")
+				fmt.Println(err)
+			}
+			var result bson.M
+			err = bson.Unmarshal(doc, &result)
+			if err != nil {
+				println("Error while unmarshaling BSON document")
+				fmt.Println(err)
+			}
+			result["coupon_code"] = result["couponcode"]
+			delete(result, "couponcode")
+			println("Addin transformed coupon_code to db ==== ")
+			_, err = collection.InsertOne(context.TODO(), result)
+			// couponData, err := collection.InsertOne(context.TODO(), coupons[i])
 			println("adding a coupon ...")
-			fmt.Println(couponData, err)
+			// fmt.Println(couponData, err)
 		}
 	}
 	postCollection := mongoClient.Database(os.Getenv("MONGO_DB_NAME")).Collection("post")

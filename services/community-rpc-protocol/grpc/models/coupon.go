@@ -54,7 +54,7 @@ func PrepareUpdatedCoupon(coupon model.CouponInput) model.Coupon {
 // Validate coupon
 func ValidateCoupon(client *mongo.Client, couponCode string) (*model.Coupon, error) {
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
-	filter := bson.D{{"couponcode", couponCode}}
+	filter := bson.D{{"coupon_code", couponCode}}
 	var result *pb.Coupon
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
@@ -73,7 +73,21 @@ func ValidateCoupon(client *mongo.Client, couponCode string) (*model.Coupon, err
 func SaveCoupon(client *mongo.Client, coupon *pb.Coupon) (*pb.CreateCouponResponse, error) {
 
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
-	_, err := collection.InsertOne(context.TODO(), &coupon)
+	// Modify the BSON document to replace "couponcode" with "coupon_code"
+	doc, err := bson.Marshal(coupon)
+	if err != nil {
+		println("Error while marshaling coupon into BSON document")
+		fmt.Println(err)
+	}
+	var result bson.M
+	err = bson.Unmarshal(doc, &result)
+	if err != nil {
+		println("Error while unmarshaling BSON document")
+		fmt.Println(err)
+	}
+	result["coupon_code"] = result["couponcode"]
+	delete(result, "couponcode")
+	_, err = collection.InsertOne(context.TODO(), result)
 	if err != nil {
 		println("Error while inserting coupon into collection")
 		fmt.Println(err)
@@ -90,12 +104,12 @@ func UpdateCoupon(client *mongo.Client, coupon *pb.Coupon, couponcode string) (*
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
 
 	opts := options.Update().SetUpsert(true)
-	filter := bson.D{{"couponcode", couponcode}}
+	filter := bson.D{{"coupon_code", couponcode}}
 	update := bson.D{{"$set", coupon}}
 
 	_, err := collection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
-		println("Error while updating by couponcode")
+		println("Error while updating by coupon_code")
 		fmt.Println(err)
 	}
 
@@ -106,18 +120,27 @@ func UpdateCoupon(client *mongo.Client, coupon *pb.Coupon, couponcode string) (*
 }
 
 // Get an array of all coupons having matching couponcode
+
 func GetCoupons(client *mongo.Client, in []string) (*pb.GetCouponsResponse, error) {
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
 	var coupons [](*pb.Coupon)
 	for i := 0; i < len(in); i++ {
-		filter := bson.D{{"couponcode", in[i]}}
+		log.Println("Getting this coupon_code - ", in[i])
+		filter := bson.D{{"coupon_code", in[i]}}
 		var result *pb.Coupon
 		err := collection.FindOne(context.TODO(), filter).Decode(&result)
 		if err != nil {
 			log.Println("Fetching documents from collection failed, %v", err)
 		} else {
+			log.Println("Found this coupon in db, adding to coupons")
+			// log.Println("Result - ", result.GetCouponCode())
+			result.CouponCode = in[i]
 			coupons = append(coupons, result)
 		}
+	}
+	log.Println("pRINTING COUPONS-")
+	for c := range coupons {
+		log.Println("code ", coupons[c].GetCouponCode())
 	}
 	res := &pb.GetCouponsResponse{
 		Coupons: coupons,
@@ -130,7 +153,7 @@ func DeleteCoupons(client *mongo.Client, in []string) (*pb.DeleteCouponsResponse
 	collection := client.Database(os.Getenv("MONGO_DB_NAME")).Collection("coupons")
 	var coupons [](*pb.Coupon)
 	for i := 0; i < len(in); i++ {
-		filter := bson.D{{"couponcode", in[i]}}
+		filter := bson.D{{"coupon_code", in[i]}}
 		var result *pb.Coupon
 		err_get := collection.FindOne(context.TODO(), filter).Decode(&result)
 		if err_get != nil {
